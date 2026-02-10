@@ -166,14 +166,17 @@ export default function HomePage() {
     setIsImporting(true);
     
     try {
+      toast({ title: 'Iniciando importação...', description: 'Lendo o arquivo selecionado.' });
       const fileContent = await fileToImport.text();
       
+      toast({ title: 'Arquivo lido com sucesso!', description: 'Enviando dados para processamento pela IA...' });
       const result = await importLeadsFromString({ spreadsheetData: fileContent });
       
-      if (!result) {
-        throw new Error('A resposta da IA estava vazia. Não foi possível processar o arquivo.');
+      if (!result || !result.leads) {
+        throw new Error('A resposta da IA está em um formato inesperado.');
       }
       
+      toast({ title: 'Processamento concluído!', description: 'Adicionando novos leads ao quadro.' });
       const newLeads = result.leads;
         
       if (newLeads.length === 0) {
@@ -215,7 +218,7 @@ export default function HomePage() {
 
     } catch (error) {
       console.error('Detailed import error:', error);
-      let errorMessage = 'Ocorreu um erro desconhecido.';
+      let errorMessage = 'Ocorreu um erro desconhecido ao processar o arquivo.';
       if (error instanceof Error) {
           errorMessage = error.message;
       } else if (typeof error === 'object' && error !== null && 'message' in error) {
@@ -228,6 +231,8 @@ export default function HomePage() {
           errorMessage = 'A região da sua chave de API não é suportada. Verifique as configurações da sua conta Google AI.';
       } else if (errorMessage.includes("Content is blocked")) {
           errorMessage = "O conteúdo do arquivo foi bloqueado pelos filtros de segurança. Verifique o arquivo e tente novamente."
+      } else if (errorMessage.includes('Failed to fetch')) {
+          errorMessage = "Falha na comunicação com o servidor. Verifique sua conexão com a internet e se o servidor está rodando.";
       }
 
 
