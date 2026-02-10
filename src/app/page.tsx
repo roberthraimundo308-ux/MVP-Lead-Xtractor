@@ -4,6 +4,17 @@ import { Plus, MoreHorizontal, Calendar, CheckSquare, MessageSquare, Paperclip }
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { Metadata } from 'next';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export const metadata: Metadata = {
     title: 'CRM Leads | VezaLeads',
@@ -73,10 +84,51 @@ export default function HomePage() {
             <h1 className="text-2xl font-bold text-foreground">CRM Leads</h1>
             <p className="text-muted-foreground">Gerencie seus leads no pipeline de vendas.</p>
           </div>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Adicionar Lead
-          </Button>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Adicionar Lead
+              </Button>
+            </SheetTrigger>
+            <SheetContent>
+              <SheetHeader>
+                <SheetTitle>Adicionar novo lead</SheetTitle>
+                <SheetDescription>
+                  Preencha as informações abaixo para criar um novo lead. Clique em salvar quando terminar.
+                </SheetDescription>
+              </SheetHeader>
+              <div className="py-4 space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Nome</Label>
+                  <Input id="name" placeholder="John Doe" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="company">Empresa</Label>
+                  <Input id="company" placeholder="InovaTech Soluções" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input id="email" type="email" placeholder="john.doe@example.com" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Telefone</Label>
+                  <Input id="phone" placeholder="(11) 98765-4321" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="website">Website</Label>
+                  <Input id="website" placeholder="inovatech.com" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="instagram">Instagram</Label>
+                  <Input id="instagram" placeholder="@inovatech" />
+                </div>
+              </div>
+              <SheetFooter>
+                <Button type="submit">Salvar Lead</Button>
+              </SheetFooter>
+            </SheetContent>
+          </Sheet>
         </header>
 
         <div className="flex-grow overflow-x-auto -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
