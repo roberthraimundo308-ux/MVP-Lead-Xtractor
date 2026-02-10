@@ -4,7 +4,7 @@
 import React, { useState, type DragEvent } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card";
-import { Plus, MoreHorizontal, Building, Phone, Instagram, Upload, Link as LinkIcon } from "lucide-react";
+import { Plus, MoreHorizontal, Building, Phone, Instagram, Upload, Link as LinkIcon, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogClose,
 } from "@/components/ui/dialog";
 import {
   Sheet,
@@ -32,6 +31,8 @@ import {
 } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from '@/hooks/use-toast';
+import { importLeadsFromString } from '@/ai/flows/import-leads-flow';
 
 const initialBoard = [
   {
@@ -91,6 +92,13 @@ type BoardColumn = typeof initialBoard[0];
 
 export default function HomePage() {
   const [board, setBoard] = useState(initialBoard);
+  const { toast } = useToast();
+  
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [activeImportTab, setActiveImportTab] = useState("upload");
+  const [fileToImport, setFileToImport] = useState<File | null>(null);
+  const [sheetLink, setSheetLink] = useState('');
+  const [isImporting, setIsImporting] = useState(false);
 
   const handleDragStart = (e: DragEvent<HTMLDivElement>, taskId: string, sourceColumnId: string) => {
     e.dataTransfer.setData('taskId', taskId);
@@ -137,6 +145,88 @@ export default function HomePage() {
     }
   };
 
+  const handleImportLeads = async () => {
+    if (activeImportTab === 'link') {
+      toast({
+        title: 'Funcionalidade em desenvolvimento',
+        description: 'A importação por link do Google Sheets será implementada em breve.',
+      });
+      return;
+    }
+
+    if (!fileToImport) {
+      toast({
+        title: 'Nenhum arquivo selecionado',
+        description: 'Por favor, selecione um arquivo .csv para importar.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsImporting(true);
+    const reader = new FileReader();
+    
+    reader.onload = async (e) => {
+      try {
+        const fileContent = e.target?.result;
+        if (typeof fileContent !== 'string') {
+          throw new Error('Não foi possível ler o conteúdo do arquivo.');
+        }
+        
+        const result = await importLeadsFromString({ spreadsheetData: fileContent });
+        
+        if (result && result.leads.length > 0) {
+          const newLeads = result.leads;
+          
+          setBoard(currentBoard => {
+            return currentBoard.map(column => {
+              if (column.id === 'novos') {
+                const existingTitles = new Set(column.tasks.map(t => t.title));
+                const uniqueNewLeads = newLeads.filter(lead => !existingTitles.has(lead.title));
+
+                return {
+                  ...column,
+                  tasks: [...column.tasks, ...uniqueNewLeads]
+                };
+              }
+              return column;
+            });
+          });
+
+          toast({
+            title: 'Leads importados com sucesso!',
+            description: `${newLeads.length} novos leads foram adicionados à coluna "Novos".`,
+          });
+          setIsImportDialogOpen(false);
+          setFileToImport(null);
+        } else {
+            throw new Error('Nenhum lead válido foi encontrado no arquivo. Verifique o formato.');
+        }
+
+      } catch (error) {
+        toast({
+          title: 'Erro ao importar leads',
+          description: error instanceof Error ? error.message : 'Ocorreu um erro desconhecido.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsImporting(false);
+      }
+    };
+    
+    reader.onerror = () => {
+        toast({
+            title: 'Erro ao ler o arquivo',
+            description: 'Não foi possível processar o arquivo selecionado.',
+            variant: 'destructive',
+        });
+        setIsImporting(false);
+    };
+
+    reader.readAsText(fileToImport);
+  };
+
+
   return (
     <div className="bg-muted/40 h-full">
       <div className="p-4 sm:p-6 lg:p-8 h-full flex flex-col">
@@ -146,7 +236,7 @@ export default function HomePage() {
             <p className="text-muted-foreground">Gerencie seus leads no pipeline de vendas.</p>
           </div>
           <div className="flex items-center gap-2">
-            <Dialog>
+            <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline">
                   <Upload className="mr-2 h-4 w-4" />
@@ -161,7 +251,7 @@ export default function HomePage() {
                   </DialogDescription>
                 </DialogHeader>
                 <div className="py-4">
-                  <Tabs defaultValue="upload">
+                  <Tabs defaultValue="upload" onValueChange={setActiveImportTab} value={activeImportTab}>
                     <TabsList className="grid w-full grid-cols-2">
                       <TabsTrigger value="upload">
                         <Upload className="mr-2 h-4 w-4" />
@@ -175,23 +265,24 @@ export default function HomePage() {
                     <TabsContent value="upload" className="pt-6">
                       <div className="grid w-full items-center gap-2">
                         <Label htmlFor="file-upload">Selecione o arquivo</Label>
-                        <Input id="file-upload" type="file" />
-                        <p className="text-xs text-muted-foreground">Formatos suportados: .csv, .xlsx</p>
+                        <Input id="file-upload" type="file" onChange={(e) => setFileToImport(e.target.files?.[0] || null)} accept=".csv" />
+                        <p className="text-xs text-muted-foreground">Formatos suportados: .csv</p>
                       </div>
                     </TabsContent>
                     <TabsContent value="link" className="pt-6">
                       <div className="grid w-full items-center gap-2">
                         <Label htmlFor="sheet-link">Link da planilha do Google</Label>
-                        <Input id="sheet-link" placeholder="https://docs.google.com/spreadsheets/d/..." />
+                        <Input id="sheet-link" placeholder="https://docs.google.com/spreadsheets/d/..." value={sheetLink} onChange={(e) => setSheetLink(e.target.value)} />
                         <p className="text-xs text-muted-foreground">Sua planilha deve estar com acesso público.</p>
                       </div>
                     </TabsContent>
                   </Tabs>
                 </div>
                 <DialogFooter>
-                  <DialogClose asChild>
-                    <Button type="button" className="w-full">Importar Leads</Button>
-                  </DialogClose>
+                  <Button type="button" className="w-full" onClick={handleImportLeads} disabled={isImporting}>
+                    {isImporting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isImporting ? 'Importando...' : 'Importar Leads'}
+                  </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
