@@ -65,14 +65,9 @@ const importLeadsFlow = ai.defineFlow(
   },
   async input => {
     const { output } = await prompt(input);
-    if (!output) {
+    if (!output || !output.leads) {
       return { leads: [] };
     }
-    // Ensure IDs are unique, as the LLM may not do this correctly.
-    const uniqueLeads = output.leads.map((lead) => ({
-        ...lead,
-        id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
-    }));
-    return { leads: uniqueLeads };
+    return { leads: output.leads };
   }
 );

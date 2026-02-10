@@ -211,7 +211,10 @@ export default function HomePage() {
       }
       
       toast({ title: 'Processamento concluído!', description: 'Adicionando novos leads ao quadro.' });
-      const newLeads = result.leads;
+      const newLeads = result.leads.map((lead) => ({
+        ...lead,
+        id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
+      }));
         
       if (newLeads.length === 0) {
         toast({
