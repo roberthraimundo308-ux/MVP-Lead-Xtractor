@@ -175,33 +175,48 @@ export default function HomePage() {
         
         const result = await importLeadsFromString({ spreadsheetData: fileContent });
         
-        if (result && result.leads.length > 0) {
-          const newLeads = result.leads;
-          
-          setBoard(currentBoard => {
-            return currentBoard.map(column => {
-              if (column.id === 'novos') {
-                const existingTitles = new Set(column.tasks.map(t => t.title));
-                const uniqueNewLeads = newLeads.filter(lead => !existingTitles.has(lead.title));
-
-                return {
-                  ...column,
-                  tasks: [...column.tasks, ...uniqueNewLeads]
-                };
-              }
-              return column;
-            });
-          });
-
-          toast({
-            title: 'Leads importados com sucesso!',
-            description: `${newLeads.length} novos leads foram adicionados à coluna "Novos".`,
-          });
-          setIsImportDialogOpen(false);
-          setFileToImport(null);
-        } else {
-            throw new Error('Nenhum lead válido foi encontrado no arquivo. Verifique o formato do arquivo ou o conteúdo.');
+        if (!result) {
+          throw new Error('A resposta da IA estava vazia. Não foi possível processar o arquivo.');
         }
+        
+        const newLeads = result.leads;
+          
+        if (newLeads.length === 0) {
+          toast({
+            title: 'Nenhum lead encontrado',
+            description: 'O arquivo foi processado, mas não foram encontrados leads para importar.',
+          });
+        } else {
+            const novosColumn = board.find(c => c.id === 'novos');
+            const existingTitles = new Set(novosColumn?.tasks.map(t => t.title) || []);
+            const uniqueNewLeads = newLeads.filter(lead => !existingTitles.has(lead.title));
+
+            if (uniqueNewLeads.length > 0) {
+                setBoard(currentBoard => {
+                    return currentBoard.map(column => {
+                        if (column.id === 'novos') {
+                            return {
+                                ...column,
+                                tasks: [...column.tasks, ...uniqueNewLeads]
+                            };
+                        }
+                        return column;
+                    });
+                });
+                toast({
+                    title: 'Leads importados com sucesso!',
+                    description: `${uniqueNewLeads.length} novos leads foram adicionados à coluna "Novos".`,
+                });
+            } else {
+                toast({
+                    title: 'Nenhum lead novo adicionado',
+                    description: 'Todos os leads do arquivo já existem no seu quadro.',
+                });
+            }
+        }
+
+        setIsImportDialogOpen(false);
+        setFileToImport(null);
 
       } catch (error) {
         console.error('Detailed import error:', error);
@@ -214,7 +229,12 @@ export default function HomePage() {
         
         if (errorMessage.includes('API key not valid')) {
             errorMessage = 'A chave de API do Gemini não é válida. Verifique a chave em seu arquivo .env e tente novamente.';
+        } else if (errorMessage.includes('location is not supported')) {
+            errorMessage = 'A região da sua chave de API não é suportada. Verifique as configurações da sua conta Google AI.';
+        } else if (errorMessage.includes("Content is blocked")) {
+            errorMessage = "O conteúdo do arquivo foi bloqueado pelos filtros de segurança. Verifique o arquivo e tente novamente."
         }
+
 
         toast({
           title: 'Erro ao importar leads',
