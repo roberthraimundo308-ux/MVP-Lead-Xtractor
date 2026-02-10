@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
 } from "@/components/ui/dialog";
 import {
   Sheet,
@@ -188,7 +189,9 @@ export default function HomePage() {
                   </Tabs>
                 </div>
                 <DialogFooter>
-                    <Button type="submit" className="w-full">Importar Leads</Button>
+                  <DialogClose asChild>
+                    <Button type="button" className="w-full">Importar Leads</Button>
+                  </DialogClose>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
