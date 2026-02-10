@@ -164,98 +164,81 @@ export default function HomePage() {
     }
 
     setIsImporting(true);
-    const reader = new FileReader();
     
-    reader.onload = async (e) => {
-      try {
-        const fileContent = e.target?.result;
-        if (typeof fileContent !== 'string') {
-          throw new Error('Não foi possível ler o conteúdo do arquivo.');
-        }
-        
-        const result = await importLeadsFromString({ spreadsheetData: fileContent });
-        
-        if (!result) {
-          throw new Error('A resposta da IA estava vazia. Não foi possível processar o arquivo.');
-        }
-        
-        const newLeads = result.leads;
-          
-        if (newLeads.length === 0) {
-          toast({
-            title: 'Nenhum lead encontrado',
-            description: 'O arquivo foi processado, mas não foram encontrados leads para importar.',
-          });
-        } else {
-            const novosColumn = board.find(c => c.id === 'novos');
-            const existingTitles = new Set(novosColumn?.tasks.map(t => t.title) || []);
-            const uniqueNewLeads = newLeads.filter(lead => !existingTitles.has(lead.title));
-
-            if (uniqueNewLeads.length > 0) {
-                setBoard(currentBoard => {
-                    return currentBoard.map(column => {
-                        if (column.id === 'novos') {
-                            return {
-                                ...column,
-                                tasks: [...column.tasks, ...uniqueNewLeads]
-                            };
-                        }
-                        return column;
-                    });
-                });
-                toast({
-                    title: 'Leads importados com sucesso!',
-                    description: `${uniqueNewLeads.length} novos leads foram adicionados à coluna "Novos".`,
-                });
-            } else {
-                toast({
-                    title: 'Nenhum lead novo adicionado',
-                    description: 'Todos os leads do arquivo já existem no seu quadro.',
-                });
-            }
-        }
-
-        setIsImportDialogOpen(false);
-        setFileToImport(null);
-
-      } catch (error) {
-        console.error('Detailed import error:', error);
-        let errorMessage = 'Ocorreu um erro desconhecido.';
-        if (error instanceof Error) {
-            errorMessage = error.message;
-        } else if (typeof error === 'object' && error !== null && 'message' in error) {
-            errorMessage = String((error as {message: string}).message);
-        }
-        
-        if (errorMessage.includes('API key not valid')) {
-            errorMessage = 'A chave de API do Gemini não é válida. Verifique a chave em seu arquivo .env e tente novamente.';
-        } else if (errorMessage.includes('location is not supported')) {
-            errorMessage = 'A região da sua chave de API não é suportada. Verifique as configurações da sua conta Google AI.';
-        } else if (errorMessage.includes("Content is blocked")) {
-            errorMessage = "O conteúdo do arquivo foi bloqueado pelos filtros de segurança. Verifique o arquivo e tente novamente."
-        }
-
-
-        toast({
-          title: 'Erro ao importar leads',
-          description: errorMessage,
-          variant: 'destructive',
-        });
-      } finally {
-        setIsImporting(false);
+    try {
+      const fileContent = await fileToImport.text();
+      
+      const result = await importLeadsFromString({ spreadsheetData: fileContent });
+      
+      if (!result) {
+        throw new Error('A resposta da IA estava vazia. Não foi possível processar o arquivo.');
       }
-    };
-    
-    reader.onerror = () => {
+      
+      const newLeads = result.leads;
+        
+      if (newLeads.length === 0) {
         toast({
-            title: 'Erro ao ler o arquivo',
-            description: 'Não foi possível processar o arquivo selecionado.',
-            variant: 'destructive',
+          title: 'Nenhum lead encontrado',
+          description: 'O arquivo foi processado, mas não foram encontrados leads para importar.',
         });
-        setIsImporting(false);
-    };
+      } else {
+          const novosColumn = board.find(c => c.id === 'novos');
+          const existingTitles = new Set(novosColumn?.tasks.map(t => t.title) || []);
+          const uniqueNewLeads = newLeads.filter(lead => !existingTitles.has(lead.title));
 
-    reader.readAsText(fileToImport);
+          if (uniqueNewLeads.length > 0) {
+              setBoard(currentBoard => {
+                  return currentBoard.map(column => {
+                      if (column.id === 'novos') {
+                          return {
+                              ...column,
+                              tasks: [...column.tasks, ...uniqueNewLeads]
+                          };
+                      }
+                      return column;
+                  });
+              });
+              toast({
+                  title: 'Leads importados com sucesso!',
+                  description: `${uniqueNewLeads.length} novos leads foram adicionados à coluna "Novos".`,
+              });
+          } else {
+              toast({
+                  title: 'Nenhum lead novo adicionado',
+                  description: 'Todos os leads do arquivo já existem no seu quadro.',
+              });
+          }
+      }
+
+      setIsImportDialogOpen(false);
+      setFileToImport(null);
+
+    } catch (error) {
+      console.error('Detailed import error:', error);
+      let errorMessage = 'Ocorreu um erro desconhecido.';
+      if (error instanceof Error) {
+          errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
+          errorMessage = String((error as {message: string}).message);
+      }
+      
+      if (errorMessage.includes('API key not valid')) {
+          errorMessage = 'A chave de API do Gemini não é válida. Verifique a chave em seu arquivo .env e tente novamente.';
+      } else if (errorMessage.includes('location is not supported')) {
+          errorMessage = 'A região da sua chave de API não é suportada. Verifique as configurações da sua conta Google AI.';
+      } else if (errorMessage.includes("Content is blocked")) {
+          errorMessage = "O conteúdo do arquivo foi bloqueado pelos filtros de segurança. Verifique o arquivo e tente novamente."
+      }
+
+
+      toast({
+        title: 'Erro ao importar leads',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsImporting(false);
+    }
   };
 
 
