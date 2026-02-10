@@ -200,13 +200,25 @@ export default function HomePage() {
           setIsImportDialogOpen(false);
           setFileToImport(null);
         } else {
-            throw new Error('Nenhum lead válido foi encontrado no arquivo. Verifique o formato.');
+            throw new Error('Nenhum lead válido foi encontrado no arquivo. Verifique o formato do arquivo ou o conteúdo.');
         }
 
       } catch (error) {
+        console.error('Detailed import error:', error);
+        let errorMessage = 'Ocorreu um erro desconhecido.';
+        if (error instanceof Error) {
+            errorMessage = error.message;
+        } else if (typeof error === 'object' && error !== null && 'message' in error) {
+            errorMessage = String((error as {message: string}).message);
+        }
+        
+        if (errorMessage.includes('API key not valid')) {
+            errorMessage = 'A chave de API do Gemini não é válida. Verifique a chave em seu arquivo .env e tente novamente.';
+        }
+
         toast({
           title: 'Erro ao importar leads',
-          description: error instanceof Error ? error.message : 'Ocorreu um erro desconhecido.',
+          description: errorMessage,
           variant: 'destructive',
         });
       } finally {
