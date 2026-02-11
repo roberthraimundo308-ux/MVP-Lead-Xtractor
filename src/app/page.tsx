@@ -263,7 +263,7 @@ export default function HomePage() {
       }
       
       if (errorMessage.includes('API key not valid')) {
-          errorMessage = 'A chave de API do Gemini não é válida. Verifique se a variável de ambiente GEMINI_API_KEY está configurada corretamente nas configurações do seu projeto na Vercel.';
+          errorMessage = 'A chave de API do Gemini não é válida ou não foi configurada. Vá para a página de Configurações para obter instruções sobre como configurá-la no seu ambiente Vercel.';
       } else if (errorMessage.includes('location is not supported')) {
           errorMessage = 'A região do seu servidor Vercel pode não ser suportada pela API. Verifique as configurações da sua conta Google AI e as configurações de região da sua aplicação na Vercel.';
       } else if (errorMessage.includes("Content is blocked")) {
