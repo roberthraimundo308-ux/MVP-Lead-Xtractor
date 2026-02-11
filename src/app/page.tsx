@@ -584,7 +584,7 @@ export default function HomePage() {
                         </CardContent>
                         <CardFooter className="p-3 pt-2">
                           <Button asChild variant="outline" size="sm" className="w-full bg-green-50 hover:bg-green-100 border-green-200 text-green-700 hover:text-green-800">
-                              <a href={`https://wa.me/${task.phone.replace(/\\D/g, '')}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
+                              <a href={`https://wa.me/${task.phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
                                   <svg viewBox="0 0 24 24" className="mr-2 h-4 w-4 fill-current"><path d="M16.75 13.96c-.25-.13-1.48-.73-1.71-.81-.23-.08-.39-.13-.56.13-.17.25-.65.81-.79.98-.15.17-.29.19-.54.06-.25-.13-1.06-.39-2.02-1.25-.75-.67-1.25-1.5-1.4-1.75-.14-.25-.01-.38.12-.51.11-.11.25-.29.37-.43.13-.14.17-.25.25-.42.08-.17.04-.31-.02-.43s-.56-1.35-.76-1.84c-.2-.48-.41-.42-.56-.42-.14,0-.3,0-.47,0-.17,0-.43.06-.66.31-.22.25-.86.84-.86,2.05,0,1.21.88,2.37,1,2.54.12.17,1.7,2.59,4.1,3.63.59.26,1.05.41,1.41.52.59.19,1.13.16,1.56.1.48-.07,1.48-.6,1.69-1.18.21-.58.21-1.07.15-1.18-.07-.1-.22-.16-.47-.29zM12.05 2.04c-5.46 0-9.9,4.44-9.9,9.9 0,5.46,4.44,9.9,9.9,9.9,5.46,0,9.9-4.44,9.9-9.9 0-5.46-4.44-9.9-9.9-9.9zM12.05 20.3c-4.55,0-8.25-3.7-8.25-8.25s3.7-8.25,8.25-8.25,8.25,3.7,8.25,8.25-3.7,8.25-8.25-8.25z"></path></svg>
                                   WhatsApp
                               </a>
