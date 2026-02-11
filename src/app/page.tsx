@@ -556,7 +556,7 @@ export default function HomePage() {
                           <div className="text-sm text-muted-foreground space-y-2">
                               <div className="flex items-center gap-2">
                                   <Building className="h-4 w-4 shrink-0 text-gray-500" />
-                                  <span>{task.company}</span>
+                                  <span className="truncate min-w-0">{task.company}</span>
                               </div>
                               <div className="flex items-center gap-2">
                                   <Phone className="h-4 w-4 shrink-0 text-gray-500" />
@@ -564,7 +564,7 @@ export default function HomePage() {
                               </div>
                               <div className="flex items-center gap-2">
                                   <Instagram className="h-4 w-4 shrink-0 text-gray-500" />
-                                  <span>{task.instagram}</span>
+                                  <span className="truncate min-w-0">{task.instagram}</span>
                               </div>
                               {task.website && (
                                 <div className="flex items-center gap-2">
@@ -574,7 +574,7 @@ export default function HomePage() {
                                       target="_blank" 
                                       rel="noopener noreferrer" 
                                       onClick={(e) => e.stopPropagation()}
-                                      className="truncate text-primary hover:underline"
+                                      className="truncate min-w-0 text-primary hover:underline"
                                     >
                                         {task.website}
                                     </a>
