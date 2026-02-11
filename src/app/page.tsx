@@ -111,42 +111,37 @@ export default function HomePage() {
   const [editingLead, setEditingLead] = useState<Task | null>(null);
   const [newComment, setNewComment] = useState('');
 
+  // Effect to load state from localStorage on initial client-side render
   useEffect(() => {
     try {
       const savedBoard = localStorage.getItem('vezaleads-board');
       if (savedBoard) {
         const parsedBoard = JSON.parse(savedBoard);
+        // Basic validation to make sure we're not loading corrupted data
         if (Array.isArray(parsedBoard) && parsedBoard.length > 0) {
           setBoard(parsedBoard);
         }
       }
     } catch (error) {
-      console.error("Failed to load board from localStorage", error);
-      toast({
-        title: "Erro ao carregar dados",
-        description: "Não foi possível carregar os leads salvos. O quadro foi redefinido.",
-        variant: "destructive",
-      });
+      console.error("Erro ao carregar dados do localStorage:", error);
     } finally {
+      // Mark the state as initialized after the first attempt to load.
       setIsStateInitialized(true);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Effect to save state to localStorage whenever the board changes
   useEffect(() => {
+    // We only save after the initial state has been loaded from localStorage.
+    // This prevents the initial empty state from overwriting saved data.
     if (isStateInitialized) {
       try {
         localStorage.setItem('vezaleads-board', JSON.stringify(board));
       } catch (error) {
-        console.error("Failed to save board to localStorage", error);
-        toast({
-            title: "Erro ao salvar dados",
-            description: "Não foi possível salvar as alterações no quadro.",
-            variant: "destructive",
-        });
+        console.error("Erro ao salvar dados no localStorage:", error);
       }
     }
-  }, [board, isStateInitialized, toast]);
+  }, [board, isStateInitialized]);
 
   const handleDragStart = (e: DragEvent<HTMLDivElement>, taskId: string, sourceColumnId: string) => {
     e.dataTransfer.setData('taskId', taskId);
