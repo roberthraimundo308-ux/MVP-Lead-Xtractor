@@ -111,6 +111,16 @@ export default function HomePage() {
   const [editingLead, setEditingLead] = useState<Task | null>(null);
   const [newComment, setNewComment] = useState('');
 
+  const [isAddLeadSheetOpen, setIsAddLeadSheetOpen] = useState(false);
+  const [newLeadData, setNewLeadData] = useState({
+    title: '',
+    company: '',
+    phone: '',
+    instagram: '',
+    website: '',
+  });
+
+
   // Effect to load state from localStorage on initial client-side render
   useEffect(() => {
     try {
@@ -118,17 +128,24 @@ export default function HomePage() {
       if (savedBoard) {
         const parsedBoard = JSON.parse(savedBoard);
         // Basic validation to make sure we're not loading corrupted data
-        if (Array.isArray(parsedBoard) && parsedBoard.length > 0) {
+        if (Array.isArray(parsedBoard) && parsedBoard.length > 0 && 'tasks' in parsedBoard[0]) {
           setBoard(parsedBoard);
         }
       }
     } catch (error) {
       console.error("Erro ao carregar dados do localStorage:", error);
+      // Optionally, show a toast to the user
+      // toast({
+      //   title: 'Erro ao carregar dados',
+      //   description: 'Não foi possível carregar o quadro salvo. Começando com um quadro limpo.',
+      //   variant: 'destructive',
+      // });
     } finally {
       // Mark the state as initialized after the first attempt to load.
       setIsStateInitialized(true);
     }
   }, []);
+
 
   // Effect to save state to localStorage whenever the board changes
   useEffect(() => {
@@ -332,6 +349,56 @@ export default function HomePage() {
       toast({ title: "Comentário adicionado." });
   };
 
+  const handleAddNewLead = () => {
+    if (!newLeadData.title.trim()) {
+      toast({
+        title: 'Nome é obrigatório',
+        description: 'Por favor, preencha o nome do lead.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const newLead: Task = {
+      id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+      title: newLeadData.title,
+      company: newLeadData.company,
+      phone: newLeadData.phone,
+      instagram: newLeadData.instagram,
+      website: newLeadData.website,
+      description: '', // Default empty description
+      ownerInitials: ['A', 'C', 'M', 'S'][Math.floor(Math.random() * 4)],
+      comments: [],
+    };
+
+    setBoard(currentBoard => {
+      return currentBoard.map(column => {
+        if (column.id === 'novos') {
+          return {
+            ...column,
+            tasks: [newLead, ...column.tasks] // Add to the top
+          };
+        }
+        return column;
+      });
+    });
+
+    toast({
+      title: 'Lead adicionado!',
+      description: `${newLead.title} foi adicionado à coluna "Novos".`,
+    });
+    
+    // Reset form and close sheet
+    setNewLeadData({
+      title: '',
+      company: '',
+      phone: '',
+      instagram: '',
+      website: '',
+    });
+    setIsAddLeadSheetOpen(false);
+  };
+
 
   return (
     <div className="bg-muted/40 h-full">
@@ -393,7 +460,7 @@ export default function HomePage() {
               </DialogContent>
             </Dialog>
 
-            <Sheet>
+            <Sheet open={isAddLeadSheetOpen} onOpenChange={setIsAddLeadSheetOpen}>
               <SheetTrigger asChild>
                 <Button>
                   <Plus className="mr-2 h-4 w-4" />
@@ -410,31 +477,27 @@ export default function HomePage() {
                 <div className="py-4 space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">Nome</Label>
-                    <Input id="name" placeholder="John Doe" />
+                    <Input id="name" placeholder="John Doe" value={newLeadData.title} onChange={(e) => setNewLeadData({...newLeadData, title: e.target.value})} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="company">Empresa</Label>
-                    <Input id="company" placeholder="InovaTech Soluções" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="john.doe@example.com" />
+                    <Input id="company" placeholder="InovaTech Soluções" value={newLeadData.company} onChange={(e) => setNewLeadData({...newLeadData, company: e.target.value})} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phone">Telefone</Label>
-                    <Input id="phone" placeholder="(11) 98765-4321" />
+                    <Input id="phone" placeholder="(11) 98765-4321" value={newLeadData.phone} onChange={(e) => setNewLeadData({...newLeadData, phone: e.target.value})} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="instagram">Instagram</Label>
-                    <Input id="instagram" placeholder="@inovatech" />
+                    <Input id="instagram" placeholder="@inovatech" value={newLeadData.instagram} onChange={(e) => setNewLeadData({...newLeadData, instagram: e.target.value})} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="website">Website</Label>
-                    <Input id="website" placeholder="inovatech.com" />
+                    <Input id="website" placeholder="inovatech.com" value={newLeadData.website} onChange={(e) => setNewLeadData({...newLeadData, website: e.target.value})} />
                   </div>
                 </div>
                 <SheetFooter>
-                  <Button type="submit">Salvar Lead</Button>
+                  <Button type="button" onClick={handleAddNewLead}>Salvar Lead</Button>
                 </SheetFooter>
               </SheetContent>
             </Sheet>
