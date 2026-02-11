@@ -562,23 +562,31 @@ export default function HomePage() {
                                   <Phone className="h-4 w-4 shrink-0 text-gray-500" />
                                   <span>{task.phone}</span>
                               </div>
-                              <div className="flex items-center gap-2">
+                              {task.instagram && (
+                                <a
+                                  href={`https://instagram.com/${task.instagram.replace('@', '')}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="flex items-center gap-2"
+                                >
                                   <Instagram className="h-4 w-4 shrink-0 text-gray-500" />
-                                  <span className="truncate min-w-0">{task.instagram}</span>
-                              </div>
+                                  <span className="truncate min-w-0 text-primary hover:underline">{task.instagram}</span>
+                                </a>
+                              )}
                               {task.website && (
-                                <div className="flex items-center gap-2">
+                                <a 
+                                  href={task.website.startsWith('http') ? task.website : `https://${task.website}`} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer" 
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="flex items-center gap-2"
+                                >
                                     <Globe className="h-4 w-4 shrink-0 text-gray-500" />
-                                    <a 
-                                      href={task.website.startsWith('http') ? task.website : `https://${task.website}`} 
-                                      target="_blank" 
-                                      rel="noopener noreferrer" 
-                                      onClick={(e) => e.stopPropagation()}
-                                      className="truncate min-w-0 text-primary hover:underline"
-                                    >
+                                    <span className="truncate min-w-0 text-primary hover:underline">
                                         {task.website}
-                                    </a>
-                                </div>
+                                    </span>
+                                </a>
                               )}
                           </div>
                         </CardContent>
