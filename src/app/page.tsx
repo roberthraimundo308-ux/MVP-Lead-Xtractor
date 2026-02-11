@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, type DragEvent } from 'react';
+import React, { useState, type DragEvent, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card";
 import { Plus, Building, Phone, Instagram, Upload, Link as LinkIcon, Loader2, Globe } from "lucide-react";
@@ -97,6 +97,7 @@ const initialBoard: { id: string; title: string; color: string; tasks: Task[] }[
 
 export default function HomePage() {
   const [board, setBoard] = useState(initialBoard);
+  const [isStateInitialized, setIsStateInitialized] = useState(false);
   const { toast } = useToast();
   
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
@@ -109,6 +110,43 @@ export default function HomePage() {
   const [isLeadSheetOpen, setIsLeadSheetOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Task | null>(null);
   const [newComment, setNewComment] = useState('');
+
+  useEffect(() => {
+    try {
+      const savedBoard = localStorage.getItem('vezaleads-board');
+      if (savedBoard) {
+        const parsedBoard = JSON.parse(savedBoard);
+        if (Array.isArray(parsedBoard) && parsedBoard.length > 0) {
+          setBoard(parsedBoard);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to load board from localStorage", error);
+      toast({
+        title: "Erro ao carregar dados",
+        description: "Não foi possível carregar os leads salvos. O quadro foi redefinido.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsStateInitialized(true);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (isStateInitialized) {
+      try {
+        localStorage.setItem('vezaleads-board', JSON.stringify(board));
+      } catch (error) {
+        console.error("Failed to save board to localStorage", error);
+        toast({
+            title: "Erro ao salvar dados",
+            description: "Não foi possível salvar as alterações no quadro.",
+            variant: "destructive",
+        });
+      }
+    }
+  }, [board, isStateInitialized, toast]);
 
   const handleDragStart = (e: DragEvent<HTMLDivElement>, taskId: string, sourceColumnId: string) => {
     e.dataTransfer.setData('taskId', taskId);
