@@ -59,62 +59,37 @@ const initialBoard: { id: string; title: string; color: string; tasks: Task[] }[
     id: 'novos',
     title: 'Novos',
     color: 'bg-gray-500',
-    tasks: [
-      { 
-        id: '1', 
-        title: 'Prospecto Alfa', 
-        description: 'Valor: R$ 25.000', 
-        company: 'InovaTech Soluções', 
-        phone: '5511987654321', 
-        instagram: '@inovatech', 
-        ownerInitials: 'A',
-        comments: [
-          { id: 'c1', text: 'Primeiro contato realizado, cliente pareceu interessado.', author: 'Usuário', timestamp: new Date().toISOString() }
-        ]
-      },
-      { id: '5', title: 'Empresa Echo', description: 'Valor: R$ 8.000', company: 'Echo Company', phone: '5511912345678', instagram: '@echoco', ownerInitials: 'M' },
-      { id: '8', title: 'Parceiro Hotel', description: 'Valor: R$ 7.500', company: 'Hotel Group', phone: '5511987651234', instagram: '@hotelgroup', ownerInitials: 'A' },
-    ]
+    tasks: []
   },
   {
     id: 'primeiro_contato',
     title: 'Primeiro Contato',
     color: 'bg-orange-500',
-    tasks: [
-        { id: '2', title: 'Cliente Potencial Bravo', description: 'Valor: R$ 5.000', company: 'Bravo Inc', phone: '5521955556666', instagram: '@bravoinc', ownerInitials: 'C' },
-    ]
+    tasks: []
   },
   {
     id: 'oportunidade',
     title: 'Oportunidade',
     color: 'bg-yellow-500',
-    tasks: [
-       { id: '6', title: 'Organização Foxtrot', description: 'Valor: R$ 30.000', company: 'Foxtrot Org', phone: '5531977778888', instagram: '@foxtrot', ownerInitials: 'C' },
-    ]
+    tasks: []
   },
   {
     id: 'proposta',
     title: 'Proposta',
     color: 'bg-blue-500',
-    tasks: [
-      { id: '3', title: 'Lead Charlie', description: 'Valor: R$ 55.000', company: 'Charlie LLC', phone: '5541911112222', instagram: '@charlie', ownerInitials: 'S' },
-    ]
+    tasks: []
   },
   {
     id: 'fechado',
     title: 'Fechado',
     color: 'bg-green-500',
-    tasks: [
-       { id: '4', title: 'Contato Delta', description: 'Valor: R$ 12.000', company: 'Delta Co', phone: '5551933334444', instagram: '@deltaco', ownerInitials: 'A' },
-    ]
+    tasks: []
   },
   {
       id: 'perdido',
       title: 'Perdido',
       color: 'bg-red-500',
-      tasks: [
-        { id: '7', title: 'Companhia Golf', description: 'Valor: R$ 18.000', company: 'Golf & Co.', phone: '5561998765432', instagram: '@golfco', ownerInitials: 'S' },
-      ]
+      tasks: []
   }
 ];
 
