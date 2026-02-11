@@ -213,7 +213,7 @@ export default function HomePage() {
       });
       return;
     }
-
+  
     if (!fileToImport) {
       toast({
         title: 'Nenhum arquivo selecionado',
@@ -222,83 +222,94 @@ export default function HomePage() {
       });
       return;
     }
-
+  
     setIsImporting(true);
-    
+    toast({ title: 'Iniciando importação...', description: 'Lendo o arquivo selecionado.' });
+  
     try {
-      toast({ title: 'Iniciando importação...', description: 'Lendo o arquivo selecionado.' });
-      const fileContent = await fileToImport.text();
-      
+      const fileContent = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          resolve(event.target?.result as string);
+        };
+        reader.onerror = (error) => {
+          reject(error);
+        };
+        reader.readAsText(fileToImport);
+      });
+  
       toast({ title: 'Arquivo lido com sucesso!', description: 'Enviando dados para processamento pela IA...' });
       const result = await importLeadsFromString({ spreadsheetData: fileContent });
-      
+  
       if (!result || !result.leads) {
         throw new Error('A resposta da IA está em um formato inesperado.');
       }
-      
+  
       toast({ title: 'Processamento concluído!', description: 'Adicionando novos leads ao quadro.' });
+      
       const newLeads = result.leads.map((lead) => ({
         ...lead,
-        id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
+        id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+        comments: [],
       }));
-        
+  
       if (newLeads.length === 0) {
         toast({
           title: 'Nenhum lead encontrado',
           description: 'O arquivo foi processado, mas não foram encontrados leads para importar.',
         });
       } else {
-          const novosColumn = board.find(c => c.id === 'novos');
+        setBoard(currentBoard => {
+          const novosColumn = currentBoard.find(c => c.id === 'novos');
           const existingTitles = new Set(novosColumn?.tasks.map(t => t.title) || []);
           const uniqueNewLeads = newLeads.filter(lead => !existingTitles.has(lead.title));
-
+  
           if (uniqueNewLeads.length > 0) {
-              setBoard(currentBoard => {
-                  return currentBoard.map(column => {
-                      if (column.id === 'novos') {
-                          return {
-                              ...column,
-                              tasks: [...column.tasks, ...uniqueNewLeads]
-                          };
-                      }
-                      return column;
-                  });
-              });
-              toast({
-                  title: 'Leads importados com sucesso!',
-                  description: `${uniqueNewLeads.length} novos leads foram adicionados à coluna "Novos".`,
-              });
+            toast({
+              title: 'Leads importados com sucesso!',
+              description: `${uniqueNewLeads.length} novos leads foram adicionados à coluna "Novos".`,
+            });
+            return currentBoard.map(column => {
+              if (column.id === 'novos') {
+                return {
+                  ...column,
+                  tasks: [...column.tasks, ...uniqueNewLeads]
+                };
+              }
+              return column;
+            });
           } else {
-              toast({
-                  title: 'Nenhum lead novo adicionado',
-                  description: 'Todos os leads do arquivo já existem no seu quadro.',
-              });
+            toast({
+              title: 'Nenhum lead novo adicionado',
+              description: 'Todos os leads do arquivo já existem no seu quadro.',
+            });
+            return currentBoard;
           }
+        });
       }
-
+  
       setIsImportDialogOpen(false);
       setFileToImport(null);
-
+  
     } catch (error) {
       console.error('Detailed import error:', error);
       let errorMessage = 'Ocorreu um erro desconhecido ao processar o arquivo.';
       if (error instanceof Error) {
-          errorMessage = error.message;
+        errorMessage = error.message;
       } else if (typeof error === 'object' && error !== null && 'message' in error) {
-          errorMessage = String((error as {message: string}).message);
+        errorMessage = String((error as { message: string }).message);
       }
-      
+  
       if (errorMessage.includes('API key not valid')) {
-          errorMessage = 'A chave de API do Gemini não é válida ou não foi configurada. Vá para a página de Configurações para obter instruções sobre como configurá-la no seu ambiente Vercel.';
+        errorMessage = 'A chave de API do Gemini não é válida ou não foi configurada. Vá para a página de Configurações para obter instruções sobre como configurá-la no seu ambiente Vercel.';
       } else if (errorMessage.includes('location is not supported')) {
-          errorMessage = 'A região do seu servidor Vercel pode não ser suportada pela API. Verifique as configurações da sua conta Google AI e as configurações de região da sua aplicação na Vercel.';
+        errorMessage = 'A região do seu servidor Vercel pode não ser suportada pela API. Verifique as configurações da sua conta Google AI e as configurações de região da sua aplicação na Vercel.';
       } else if (errorMessage.includes("Content is blocked")) {
-          errorMessage = "O conteúdo do arquivo foi bloqueado pelos filtros de segurança. Verifique o arquivo e tente novamente."
+        errorMessage = "O conteúdo do arquivo foi bloqueado pelos filtros de segurança. Verifique o arquivo e tente novamente."
       } else if (errorMessage.includes('Failed to fetch')) {
-          errorMessage = "Falha na comunicação com o servidor. Verifique sua conexão com a internet e os logs da aplicação na Vercel.";
+        errorMessage = "Falha na comunicação com o servidor. Verifique sua conexão com a internet e os logs da aplicação na Vercel.";
       }
-
-
+  
       toast({
         title: 'Erro ao importar leads',
         description: errorMessage,
@@ -372,15 +383,19 @@ export default function HomePage() {
     };
 
     setBoard(currentBoard => {
-      return currentBoard.map(column => {
-        if (column.id === 'novos') {
-          return {
-            ...column,
-            tasks: [newLead, ...column.tasks] // Add to the top
-          };
-        }
-        return column;
-      });
+      const novosColumnIndex = currentBoard.findIndex(c => c.id === 'novos');
+      const targetColumnIndex = novosColumnIndex > -1 ? novosColumnIndex : 0;
+
+      const newBoard = [...currentBoard];
+      const targetColumn = newBoard[targetColumnIndex];
+      
+      const updatedColumn = {
+          ...targetColumn,
+          tasks: [newLead, ...targetColumn.tasks]
+      };
+
+      newBoard[targetColumnIndex] = updatedColumn;
+      return newBoard;
     });
 
     toast({
