@@ -16,6 +16,7 @@ const LeadSchema = z.object({
   company: z.string().describe("The lead's company name."),
   phone: z.string().describe("The lead's phone number."),
   instagram: z.string().describe("The lead's Instagram handle."),
+  website: z.string().optional().describe("The lead's website URL, if available from a 'Website' column."),
   ownerInitials: z.string().describe('The initials of the lead owner. Pick one initial at random from A, C, M, S.'),
 });
 
@@ -46,6 +47,7 @@ The data contains information about leads, which may include columns like 'Nome'
 - The 'company' field corresponds to the 'Empresa' (Company) column.
 - The 'phone' field corresponds to the 'Telefone' (Phone) column.
 - The 'instagram' field corresponds to the 'Instagram' column.
+- The 'website' field corresponds to the 'Website' column.
 - For 'ownerInitials', randomly assign one of the following letters: 'A', 'C', 'M', 'S'.
 
 The column order in the input data is not guaranteed. Some fields may be missing for some leads. Be robust to these variations.
