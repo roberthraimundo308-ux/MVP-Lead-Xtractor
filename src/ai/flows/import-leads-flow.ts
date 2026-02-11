@@ -11,7 +11,6 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const LeadSchema = z.object({
-  id: z.string().describe('A unique identifier for the lead. Should be a random number as a string.'),
   title: z.string().describe('The name of the lead contact person.'),
   description: z.string().describe('A description, often including the monetary value of the lead (e.g., "Valor: R$ 25.000").'),
   company: z.string().describe("The lead's company name."),
@@ -47,7 +46,6 @@ The data contains information about leads, which may include columns like 'Nome'
 - The 'company' field corresponds to the 'Empresa' (Company) column.
 - The 'phone' field corresponds to the 'Telefone' (Phone) column.
 - The 'instagram' field corresponds to the 'Instagram' column.
-- For 'id', generate a unique random number as a string for each lead.
 - For 'ownerInitials', randomly assign one of the following letters: 'A', 'C', 'M', 'S'.
 
 The column order in the input data is not guaranteed. Some fields may be missing for some leads. Be robust to these variations.

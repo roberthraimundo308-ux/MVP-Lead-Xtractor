@@ -263,13 +263,13 @@ export default function HomePage() {
       }
       
       if (errorMessage.includes('API key not valid')) {
-          errorMessage = 'A chave de API do Gemini não é válida. Verifique a chave em seu arquivo .env e tente novamente.';
+          errorMessage = 'A chave de API do Gemini não é válida. Verifique se a variável de ambiente GEMINI_API_KEY está configurada corretamente nas configurações do seu projeto na Vercel.';
       } else if (errorMessage.includes('location is not supported')) {
-          errorMessage = 'A região da sua chave de API não é suportada. Verifique as configurações da sua conta Google AI.';
+          errorMessage = 'A região do seu servidor Vercel pode não ser suportada pela API. Verifique as configurações da sua conta Google AI e as configurações de região da sua aplicação na Vercel.';
       } else if (errorMessage.includes("Content is blocked")) {
           errorMessage = "O conteúdo do arquivo foi bloqueado pelos filtros de segurança. Verifique o arquivo e tente novamente."
       } else if (errorMessage.includes('Failed to fetch')) {
-          errorMessage = "Falha na comunicação com o servidor. Verifique sua conexão com a internet e se o servidor está rodando.";
+          errorMessage = "Falha na comunicação com o servidor. Verifique sua conexão com a internet e os logs da aplicação na Vercel.";
       }
 
 
@@ -575,5 +575,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-    
